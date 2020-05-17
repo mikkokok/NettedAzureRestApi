@@ -41,46 +41,29 @@ namespace NettedAzure
             return token;
         }
 
-        //GET https://management.azure.com/subscriptions/{subscriptionId}/providers/{resourceProviderNamespace}?api-version=2019-10-01
-        //Microsoft.OperationalInsights
-        //POST https://management.azure.com/subscriptions/{subscriptionId}/providers/{resourceProviderNamespace}/register?api-version=2019-10-01
         private static string GetSubscriptionResourceProvider(string subscriptionId, string token)
         {
             var uri =
                 $"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.OperationalInsights?api-version=2019-10-01";
 
-
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
-            httpWebRequest.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + token);
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Method = "GET";
-
-            return GetWebResponse(httpWebRequest);
+            return GetWebResponse(uri, token, "GET");
         }
         private static string RegisterResourceProvider(string subscriptionId, string token)
         {
             var uri =
                 $"https://management.azure.com/subscriptions/{subscriptionId}/providers/Microsoft.OperationalInsights/register?api-version=2019-10-01";
 
-            // Create the request
+            return GetWebResponse(uri, token, "POST");
+        }
+
+        private static string GetWebResponse(string uri, string token, string method)
+        {
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(uri);
             httpWebRequest.Headers.Add(HttpRequestHeader.Authorization, "Bearer " + token);
             httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Method = "POST";
+            httpWebRequest.Method = method;
 
-            //using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-            //{
-            //    streamWriter.Write(body);
-            //    streamWriter.Flush();
-            //    streamWriter.Close();
-            //}
-
-            return GetWebResponse(httpWebRequest);
-        }
-
-        private static string GetWebResponse(HttpWebRequest httpWebRequest)
-        {
-            var httpResponse = (HttpWebResponse) httpWebRequest.GetResponse();
+            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
 
             using (var streamReader = new StreamReader(httpResponse.GetResponseStream() ?? throw new InvalidOperationException()))
             {
